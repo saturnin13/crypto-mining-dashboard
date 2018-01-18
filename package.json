@@ -8,9 +8,9 @@
     "test": "echo \"Error: no test specified.\" && exit 0"
   },
   "dependencies": {
+    "pg": "7.4.1"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/saturnin13/crypto-mining-dashboard.git"
