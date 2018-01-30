@@ -6,6 +6,10 @@ var LocalStrategy   = require('passport-local').Strategy;
 // load up the user model
 var User            = require('../app/models/user');
 
+// DB in postgres
+var pgp = require('pg-promise')(/*options*/);
+var db = pgp(process.env.DATABASE_URL);
+
 // expose this function to our app using module.exports
 module.exports = function(passport) {
 
