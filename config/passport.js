@@ -113,11 +113,11 @@ module.exports = function(passport) {
                 "FROM users " +
                 "WHERE email=$1 AND password=$2", [email, password])
                 .then((result)=> {
-                    console.log("success login with " + email + " and " + password);
+                    console.log("success login with " + email + " and " + password + " and " + result);
                     return done(null, result);
                 })
                 .catch((err) => {
-                    console.log("/login: " + err);
+                    console.log("error login with " + err);
                     return done(null, false, {message:'Wrong user name or password'});
                 });
 
