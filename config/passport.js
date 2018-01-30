@@ -104,10 +104,10 @@ module.exports = function(passport) {
         },
         function(req, email, password, done) { // callback with email and password from our form
 
-            console.log.debug("Login process:", username);
+            console.log.debug("Login process:", email);
             return db.one("SELECT id, email, password, type " +
                 "FROM users " +
-                "WHERE email=$1 AND password=$2", [username, password])
+                "WHERE email=$1 AND password=$2", [email, password])
                 .then((result)=> {
                     return done(null, result);
                 })
