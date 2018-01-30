@@ -22,11 +22,11 @@ module.exports = function(passport) {
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        console.log.debug("deserialize ", id);
+        console.log("deserialize ", id);
         db.one("SELECT id, email, password, type FROM users " +
             "WHERE id = $1", [id])
             .then((user)=>{
-                console.log.debug("deserializeUser ", user);
+                console.log("deserializeUser ", user);
                 done(null, user);
             })
             .catch((err)=>{
@@ -104,7 +104,7 @@ module.exports = function(passport) {
         },
         function(req, email, password, done) { // callback with email and password from our form
 
-            console.log.debug("Login process:", email);
+            console.log("Login process:", email);
             return db.one("SELECT id, email, password, type " +
                 "FROM users " +
                 "WHERE email=$1 AND password=$2", [email, password])
@@ -112,7 +112,7 @@ module.exports = function(passport) {
                     return done(null, result);
                 })
                 .catch((err) => {
-                    console.log.error("/login: " + err);
+                    console.log("/login: " + err);
                     return done(null, false, {message:'Wrong user name or password'});
                 });
 
