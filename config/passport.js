@@ -113,7 +113,7 @@ module.exports = function(passport) {
                 "FROM users " +
                 "WHERE email=$1 AND password=$2", [email, password])
                 .then((result)=> {
-                    console.log("success login with " + email + " and " + password + " and " + result);
+                    console.log("success login with " + email + " and " + password + " and " + result.toString());
                     return done(null, result);
                 })
                 .catch((err) => {
