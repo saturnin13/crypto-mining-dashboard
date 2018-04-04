@@ -1,11 +1,17 @@
 // app/routes.js
+var { check, validationResult } = require('express-validator/check');
+const { matchedData } = require('express-validator/filter');
+
+// DB in postgres
+var db = require('../app/mydb').db();
+
 module.exports = function(app, passport) {
 
     // =====================================
     // HOME PAGE (with login links) ========
     // =====================================
     app.get('/', function(req, res) {
-        res.render('index.ejs'); // load the index.ejs file
+        res.render('index.ejs', {csrfToken: req.csrfToken()}); // load the index.ejs file
     });
 
     // =====================================
@@ -15,7 +21,8 @@ module.exports = function(app, passport) {
     app.get('/login', function(req, res) {
 
         // render the page and pass in any flash data if it exists
-        res.render('login.ejs', { message: req.flash('loginMessage') });
+        res.render('login.ejs', { message: req.flash('loginMessage'),
+            csrfToken: req.csrfToken() });
     });
 
     // process the login form
@@ -32,7 +39,8 @@ module.exports = function(app, passport) {
     app.get('/signup', function(req, res) {
 
         // render the page and pass in any flash data if it exists
-        res.render('signup.ejs', { message: req.flash('signupMessage') });
+        res.render('signup.ejs', { message: req.flash('signupMessage'),
+            csrfToken: req.csrfToken() });
     });
 
     // process the signup form
@@ -48,9 +56,49 @@ module.exports = function(app, passport) {
     // we will want this protected so you have to be logged in to visit
     // we will use route middleware to verify this (the isLoggedIn function)
     app.get('/profile', isLoggedIn, function(req, res) {
-        res.render('profile.ejs', {
-            user : req.user // get the user out of session and pass to template
-        });
+        db.one("SELECT id, user_id, activate_mining " +
+            "FROM configurations " +
+            "WHERE user_id=$1", [req.user.id])
+            .then((result)=> {
+                res.render('profile.ejs', {
+                    user : req.user, // get the user out of session and pass to template
+                    config: {activateMining: result.activate_mining},
+                    errors: null,
+                    csrfToken: req.csrfToken()
+                });
+            })
+            .catch((err) => {
+                console.log("error getting config data with " + err);
+            });
+    });
+
+    app.post('/profile', isLoggedIn, [
+            check('activateMining'),
+            // check('test')
+            //     .isEmail()
+            //     .withMessage('That email doesn‘t look right')
+            //     .trim()
+            //     .normalizeEmail()
+        ], (req, res) => {
+        const errors = validationResult(req);
+        const sanitizedData = matchedData(req);
+        configValue = configValueForDb(sanitizedData);
+
+        db.one("UPDATE configurations " +
+            "SET activate_mining=" + configValue.activateMining + " " +
+            "WHERE id=2 " +
+            "RETURNING *;")
+            .then((result)=> {
+                res.render('profile.ejs', {
+                    user : req.user,
+                    config: {activateMining: result.activate_mining},
+                    errors: errors.mapped(),
+                    csrfToken: req.csrfToken()
+                });
+            })
+            .catch((err) => {
+                console.log("error getting config data with " + err);
+            });
     });
 
     // =====================================
@@ -71,4 +119,12 @@ function isLoggedIn(req, res, next) {
 
     // if they aren't redirect them to the home page
     res.redirect('/');
+}
+
+function configValueForDb(data) {
+    var config = {activateMining: false};
+    if(data.activateMining) {
+        config.activateMining = true;
+    }
+    return config;
 }

@@ -1,0 +1,23 @@
+#user-info {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+}
+
+#logout {
+    text-align: right;
+}
+
+body {
+    padding-top:80px;
+    word-wrap:break-word;
+}
+
+.container {
+    background: #fbfbfb;
+    border-radius: 15px;
+}
+
+#user-email {
+    padding-top: 10px
+}

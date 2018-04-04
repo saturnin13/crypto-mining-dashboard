@@ -7,8 +7,7 @@ var LocalStrategy   = require('passport-local').Strategy;
 var User            = require('../app/models/user');
 
 // DB in postgres
-var pgp = require('pg-promise')(/*options*/);
-var db = pgp(process.env.DATABASE_URL);
+var db = require('../app/mydb').db();
 
 // expose this function to our app using module.exports
 module.exports = function(passport) {
@@ -30,7 +29,6 @@ module.exports = function(passport) {
         db.one("SELECT id, email, password, type FROM users " +
             "WHERE id = $1", [id])
             .then((user)=>{
-                console.log("deserializeUser ", user);
                 done(null, user);
             })
             .catch((err)=>{
@@ -55,6 +53,30 @@ module.exports = function(passport) {
         },
         function(req, email, password, done) {
             console.log("local-signup");
+
+            return db.oneOrNone("SELECT id, email, password, type " +
+                "FROM users " +
+                "WHERE email=$1", [email])
+                .then((result)=> {
+                    if(result) {
+                        return done(null, false, {message:'User is already registered'});
+                    } else {
+                        var type = "testType";
+                        db.query("INSERT INTO users (Email, Password, Type) " +
+                            "VALUES ('" + email + "','" + password + "', '" + type + "');");
+                        db.one("SELECT id, email, password, type " +
+                            "FROM users " +
+                            "WHERE email=$1", [email]).then((result2) => {
+                            db.query("INSERT INTO configurations (user_id,activate_mining) VALUES (" + result2.id + ",false);");
+                            console.log("success creating user with email: " + email + " and password: " + password);
+                            return done(null, result2);
+                        });
+                    }
+                })
+                .catch((err) => {
+                    console.log("error login with " + err);
+                    return done(err);
+                });
 
             // asynchronous
             // User.findOne wont fire unless data is sent back
@@ -108,8 +130,8 @@ module.exports = function(passport) {
             passReqToCallback : true // allows us to pass back the entire request to the callback
         },
         function(req, email, password, done) { // callback with email and password from our form
+            console.log("local-login");
 
-            console.log("Login process:", email);
             return db.one("SELECT id, email, password, type " +
                 "FROM users " +
                 "WHERE email=$1 AND password=$2", [email, password])

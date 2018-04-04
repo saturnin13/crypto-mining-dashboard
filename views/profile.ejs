@@ -4,35 +4,61 @@
 <head>
     <title>Node Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
-    <style>
-        body        { padding-top:80px; word-wrap:break-word; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="/styles/profile.css">
 </head>
 <body>
+<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
 <div class="container">
 
-    <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
-        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+    <div class="text-center">
+        <h1><span class="fas fa-tachometer-alt"></span> Crypto Mining Dashboard </h1>
+    </div>
+
+    <div class="row" id="user-info">
+        <div class="col-sm-2" id="user-email">
+            <span class="fa fa-user"></span> <%= user.email %>
+        </div>
+        <div class="col-sm-2 col-sm-offset-8" id="logout">
+            <a href="/logout" class="btn btn-default">Logout</a>
+        </div>
     </div>
 
     <div class="row">
-
-        <!-- LOCAL INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3><span class="fa fa-user"></span> Local</h3>
-
-                <p>
-                    <strong>id</strong>: <%= //user._id %><br>
-                    <strong>email</strong>: <%= //user.local.email %><br>
-                    <strong>password</strong>: <%= //user.local.password %>
-                </p>
-
+        <div class="col-sm-12">
+            <% if(errors !== null) { %>
+            <div class="form-header">
+                <% if(Object.keys(errors).length !== 0) { %>
+                <div class="alert alert-danger">
+                    <strong>Error!</strong> The following errors appeared while updating configurations:
+                    <ul class="errors-list">
+                        <% Object.values(errors).forEach(error => { %>
+                        <li><%= error.msg %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+                <% } else { %>
+                <div class="alert alert-success">
+                    <strong>Success!</strong> Configuraions successfully updated.
+                </div>
+                <% } %>
             </div>
+            <% } %>
         </div>
+    </div>
 
+    <div class="row">
+        <div class="col-sm-2">
+            <form method="post" action="/profile" novalidate>
+                <!--<label>-->
+                    <!--<input type="text" name="test">-->
+                <!--</label><span>test</span>-->
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <label>
+                    <input type="checkbox" name="activateMining" <% if(config.activateMining) { %> checked <% }%>>
+                </label> <span>Activate Mining</span>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
     </div>
 
 </div>
