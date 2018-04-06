@@ -26,7 +26,7 @@ module.exports = function(passport) {
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
         console.log("deserialize ", id);
-        db.one("SELECT id, email, password, type FROM users " +
+        db.one("SELECT id, email, password FROM users " +
             "WHERE id = $1", [id])
             .then((user)=>{
                 done(null, user);
@@ -54,21 +54,20 @@ module.exports = function(passport) {
         function(req, email, password, done) {
             console.log("local-signup");
 
-            return db.oneOrNone("SELECT id, email, password, type " +
+            return db.oneOrNone("SELECT id, email, password " +
                 "FROM users " +
                 "WHERE email=$1", [email])
                 .then((result)=> {
                     if(result) {
                         return done(null, false, {message:'User is already registered'});
                     } else {
-                        var type = "testType";
-                        db.query("INSERT INTO users (Email, Password, Type) " +
-                            "VALUES ('" + email + "','" + password + "', '" + type + "');");
-                        db.one("SELECT id, email, password, type " +
+                        db.query("INSERT INTO users (Email, Password) " +
+                            "VALUES ('" + email + "','" + password + "');");
+                        db.one("SELECT id, email, password " +
                             "FROM users " +
                             "WHERE email=$1", [email]).then((result2) => {
                             db.query("INSERT INTO configurations (user_id,activate_mining) VALUES (" + result2.id + ",false);");
-                            console.log("success creating user with email: " + email + " and password: " + password);
+                            console.log("sgituccess creating user with email: " + email + " and password: " + password);
                             return done(null, result2);
                         });
                     }
@@ -132,7 +131,7 @@ module.exports = function(passport) {
         function(req, email, password, done) { // callback with email and password from our form
             console.log("local-login");
 
-            return db.one("SELECT id, email, password, type " +
+            return db.one("SELECT id, email, password " +
                 "FROM users " +
                 "WHERE email=$1 AND password=$2", [email, password])
                 .then((result)=> {
