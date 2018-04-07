@@ -1,6 +1,6 @@
 // app/routes.js
-var { check, validationResult } = require('express-validator/check');
-const { matchedData } = require('express-validator/filter');
+var { check, oneOf, validationResult } = require('express-validator/check');
+const { matchedData, sanitize } = require('express-validator/filter');
 
 // DB in postgres
 var db = require('../app/mydb').db();
@@ -54,52 +54,14 @@ module.exports = function(app, passport) {
     // PROFILE SECTION =====================
     // =====================================
     // we will want this protected so you have to be logged in to visit
-    // we will use route middleware to verify this (the isLoggedIn function)
-    app.get('/profile', isLoggedIn, function(req, res) {
-        db.one("SELECT id, user_id, activate_mining " +
-            "FROM configurations " +
-            "WHERE user_id=$1", [req.user.id])
-            .then((result)=> {
-                res.render('profile.ejs', {
-                    user : req.user, // get the user out of session and pass to template
-                    config: {activateMining: result.activate_mining},
-                    errors: null,
-                    csrfToken: req.csrfToken()
-                });
-            })
-            .catch((err) => {
-                console.log("error getting config data with " + err);
-            });
-    });
+    // we will use route middleware to verify this (the verifyLoggedIn function)
+    app.get('/profile', verifyLoggedIn, getConfigs, renderProfile);
 
-    app.post('/profile', isLoggedIn, [
-            check('activateMining'),
-            // check('test')
-            //     .isEmail()
-            //     .withMessage('That email doesn‘t look right')
-            //     .trim()
-            //     .normalizeEmail()
-        ], (req, res) => {
-        const errors = validationResult(req);
-        const sanitizedData = matchedData(req);
-        configValue = configValueForDb(sanitizedData);
-
-        db.one("UPDATE configurations " +
-            "SET activate_mining=" + configValue.activateMining + " " +
-            "WHERE id=2 " +
-            "RETURNING *;")
-            .then((result)=> {
-                res.render('profile.ejs', {
-                    user : req.user,
-                    config: {activateMining: result.activate_mining},
-                    errors: errors.mapped(),
-                    csrfToken: req.csrfToken()
-                });
-            })
-            .catch((err) => {
-                console.log("error getting config data with " + err);
-            });
-    });
+    app.post('/profile', verifyLoggedIn, [formatCheckboxData,
+            oneOf([[check('activate_mining').exists(), check('general_submit').exists()],
+                [check('currencies.*').exists(), check('cryptocurrencies_submit').exists()]])
+            // check('test').isEmail().withMessage('That email doesn‘t look right').trim().normalizeEmail().toBoolean()
+        ], updateConfigs, getConfigs, renderProfile);
 
     // =====================================
     // LOGOUT ==============================
@@ -112,7 +74,7 @@ module.exports = function(app, passport) {
 };
 
 // route middleware to make sure a user is logged in
-function isLoggedIn(req, res, next) {
+function verifyLoggedIn(req, res, next) {
     // if user is authenticated in the session, carry on
     if (req.isAuthenticated())
         return next();
@@ -121,10 +83,90 @@ function isLoggedIn(req, res, next) {
     res.redirect('/');
 }
 
-function configValueForDb(data) {
-    var config = {activateMining: false};
-    if(data.activateMining) {
-        config.activateMining = true;
+function renderProfile(req, res) {
+    res.render('profile.ejs', {
+        user : req.user, // get the user out of session and pass to template
+        configs: req.configs,
+        errors: req.errors == null ? null:req.errors,
+        csrfToken: req.csrfToken()
+    });
+}
+
+function getConfigs(req, res, next) {
+    db.one("SELECT * " +
+        "FROM configurations " +
+        "WHERE user_id=$1", [req.user.id])
+        .then((result1)=> {
+            req.configs = result1;
+            db.one("SELECT * " +
+                "FROM mined_cryptocurrencies " +
+                "WHERE configuration_id=$1", [result1.id])
+                .then((result2)=> {
+                    delete result2["id"];
+                    delete result2["configuration_id"];
+                    req.configs.mined_cryptocurrencies = result2;
+                    next();
+                })
+                .catch((err) => {
+                    console.log("error getting config mined_cryptocurrencies data with " + err);
+                });
+        })
+        .catch((err) => {
+            console.error("error getting config data with " + err);
+        });
+}
+
+function updateConfigs(req, res, next) {
+    const errors = validationResult(req);
+    req.errors = errors.mapped();
+    const sanitizedData = matchedData(req);
+
+    db.query(generateSQL(sanitizedData, req.user.id))
+        .then((result)=> {
+            next();
+        })
+        .catch((err) => {
+            console.log("error updating config data with " + err);
+        });
+}
+
+function generateSQL(data, userId) {
+    result = "";
+    if(isGeneralConfigurations(data)) {
+        result = "UPDATE configurations " +
+            "SET activate_mining=" + data.activate_mining + " " +
+            "WHERE user_id=" + userId;
+    } else if (isCryptocurrenciesConfigurations(data)) {
+        result = "UPDATE mined_cryptocurrencies " +
+            "SET " + getAllCurrencySetValue(data) + " " +
+            "FROM users JOIN configurations ON users.id=configurations.user_id " +
+            "WHERE mined_cryptocurrencies.configuration_id=configurations.id AND user_id=" + userId;
     }
-    return config;
+    return result;
+}
+
+function getAllCurrencySetValue(data) {
+    for(let currency in data.currencies) {
+        result += "\"" + currency.toUpperCase() + "\"" + "=" + data.currencies[currency] + ", ";
+    }
+    return result.substring(0, result.length - 2)
+}
+
+function formatCheckboxData(req, res, next) {
+    if(isGeneralConfigurations(req.body)) {
+        req.body.activate_mining = req.body.activate_mining[1] === "on";
+    } else if (isCryptocurrenciesConfigurations(req.body)) {
+        for(let currency in req.body.currencies) {
+            req.body.currencies[currency] = req.body.currencies[currency][1] === "on";
+        }
+    }
+    next();
+}
+
+function isGeneralConfigurations(data) {
+    return data.general_submit != null;
+}
+
+function isCryptocurrenciesConfigurations(data) {
+    return data.cryptocurrencies_submit != null;
 }

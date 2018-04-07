@@ -5,6 +5,8 @@
     <title>Node Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/styles/profile.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
 <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
@@ -23,44 +25,91 @@
         </div>
     </div>
 
+
     <div class="row">
-        <div class="col-sm-12">
-            <% if(errors !== null) { %>
-            <div class="form-header">
-                <% if(Object.keys(errors).length !== 0) { %>
-                <div class="alert alert-danger">
-                    <strong>Error!</strong> The following errors appeared while updating configurations:
-                    <ul class="errors-list">
-                        <% Object.values(errors).forEach(error => { %>
-                        <li><%= error.msg %></li>
-                        <% }) %>
-                    </ul>
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#home">Overview</a></li>
+            <li><a data-toggle="tab" href="#general_submit">General Configurations</a></li>
+            <li><a data-toggle="tab" href="#cryptocurrencies_submit">Cryptocurrencies</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="row">
+                <div class="col-sm-12">
+                    <% if(errors !== null) { %>
+                    <div class="form-header">
+                        <% if(Object.keys(errors).length !== 0) { %>
+                        <div class="alert alert-danger">
+                            <strong>Error!</strong> The following errors appeared while updating configurations:
+                            <ul class="errors-list">
+                                <% Object.values(errors).forEach(error => { %>
+                                <li><%= error.msg %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                        <% } else { %>
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> Configurations successfully updated.
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
                 </div>
-                <% } else { %>
-                <div class="alert alert-success">
-                    <strong>Success!</strong> Configuraions successfully updated.
-                </div>
-                <% } %>
             </div>
-            <% } %>
+
+            <div id="home" class="tab-pane fade in active">
+
+            </div>
+
+            <div id="general_submit" class="tab-pane fade">
+
+                <div class="row">
+                    <div class="col-sm-2 col-sm-offset-5">
+                        <form method="post" action="/profile#general_submit" novalidate>
+                            <!--<label>-->
+                            <!--<input type="text" name="test">-->
+                            <!--</label><span>test</span>-->
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <div class="checkbox">
+                                <input type="hidden" name="activate_mining" value="0" />
+                                <label><input type="checkbox" name="activate_mining" <% if(configs.activate_mining) { %> checked <% } %>> Activate Mining</label>
+                            </div>
+                            <button type="submit" name="general_submit" class="btn btn-success">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cryptocurrencies_submit" class="tab-pane fade">
+                <form method="post" action="/profile#cryptocurrencies_submit" novalidate>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Cryptocurrency</th>
+                            <th>Mining activated</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <% for(let currency in configs.mined_cryptocurrencies) { %>
+                        <tr>
+                            <td><%= currency %></td>
+                            <td>
+                                <input type="hidden" name="currencies[<%= currency %>]" value="0" />
+                                <input type="checkbox" name="currencies[<%= currency %>]" <% if(configs.mined_cryptocurrencies[currency]) { %> checked <% } %>>
+                            </td>
+                        </tr>
+                        <% } %>
+                        </tbody>
+                    </table>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="col-sm-2 col-sm-offset-5 text-center">
+                        <button type="submit" name="cryptocurrencies_submit" class="btn btn-success">Submit</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-sm-2">
-            <form method="post" action="/profile" novalidate>
-                <!--<label>-->
-                    <!--<input type="text" name="test">-->
-                <!--</label><span>test</span>-->
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <label>
-                    <input type="checkbox" name="activateMining" <% if(config.activateMining) { %> checked <% }%>>
-                </label> <span>Activate Mining</span>
-                <button type="submit" class="btn btn-success">Submit</button>
-            </form>
-        </div>
-    </div>
-
 </div>
+<script src="/scripts/profile.js"></script>
 </body>
 </html>

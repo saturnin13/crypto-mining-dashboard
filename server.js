@@ -46,6 +46,7 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 
 // static directory for stylesheet
 app.use("/styles", express.static(__dirname + "/views/styles")); // static css routing
+app.use("/scripts", express.static(__dirname + "/views/scripts")); // static scripts routing
 
 // form simple validator
 app.use(validator());
