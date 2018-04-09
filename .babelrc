@@ -1,0 +1,12 @@
+// File not currenctly use in the project can be deleted ay time
+{
+  "presets": [
+    ["env", {"modules": false}],
+    "stage-1",
+    "react"
+  ]
+//,
+//  "plugins": [
+//    "transform-runtime"
+//  ]
+}

@@ -7,13 +7,15 @@
     <link rel="stylesheet" type="text/css" href="/styles/profile.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.2/socket.io.js"></script>
 </head>
 <body>
 <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
 <div class="container">
 
     <div class="text-center">
-        <h1><span class="fas fa-tachometer-alt"></span> Crypto Mining Dashboard </h1>
+        <h1><span class="fas fa-tachometer-alt"></span> ln Crypto Mining Dashboard </h1>
     </div>
 
     <div class="row" id="user-info">
@@ -58,7 +60,22 @@
             </div>
 
             <div id="home" class="tab-pane fade in active">
-
+                <table class="table table-striped" id="workers-table">
+                    <thead>
+                    <tr>
+                        <th>Machines</th>
+                        <th>Mined currency</th>
+                        <th>Hashrate</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="worker in workers" >
+                        <td > {{worker.worker_name}} </td>
+                        <td> {{worker.mined_currency}} </td>
+                        <td> {{worker.hashrate}} Mh/s </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div id="general_submit" class="tab-pane fade">
@@ -110,6 +127,7 @@
         </div>
     </div>
 </div>
+
 <script src="/scripts/profile.js"></script>
 </body>
 </html>

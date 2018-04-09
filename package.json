@@ -1,20 +1,24 @@
 {
   "name": "crypto-mining-dashboard",
   "version": "1.0.0",
-  "description": "",
+  "description": "to start\r npm run start",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "test": "echo \"Error: no test specified.\" && exit 0"
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "~1.15.2",
-    "express-flash": "latest",
     "cookie-parser": "~1.4.3",
+    "csurf": "latest",
     "ejs": "~2.5.2",
     "express": "~4.14.0",
+    "express-flash": "latest",
     "express-session": "~1.14.1",
+    "express-validator": "5.1.1",
+    "helmet": "latest",
+    "http": "0.0.0",
     "method-override": "~2.3.6",
     "mongoose": "^5.0.2",
     "morgan": "~1.7.0",
@@ -25,11 +29,11 @@
     "passport-twitter": "~1.0.4",
     "pg": "7.4.1",
     "pg-promise": "latest",
-    "express-validator": "5.1.1",
-    "csurf": "latest",
-    "helmet": "latest"
+    "socket.io": "^2.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/saturnin13/crypto-mining-dashboard.git"

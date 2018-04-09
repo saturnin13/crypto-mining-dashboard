@@ -25,7 +25,6 @@ module.exports = function(passport) {
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        console.log("deserialize ", id);
         db.one("SELECT id, email, password FROM users " +
             "WHERE id = $1", [id])
             .then((user)=>{
