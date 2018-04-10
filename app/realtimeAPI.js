@@ -1,3 +1,5 @@
+const globalConstant = require('../variables.js');
+
 // DB in postgres
 let db = require('./mydb').db();
 
@@ -10,7 +12,7 @@ module.exports = function(io, sessionMiddleware) {
                 emitWorkersData(clientSocket)
             });
         }
-        , 2000);
+        , globalConstant.HASHRATE_REFRESH_RATE);
 
     io.use(function(socket, next) {
         sessionMiddleware(socket.request, socket.request.res, next);
@@ -34,6 +36,9 @@ function emitWorkersData(clientSocket) {
         "FROM workers " +
         "WHERE user_id=$1", [clientSocket.request.session.passport.user])
         .then((result)=> {
+            result.forEach(worker => {
+                worker.hashrate = worker.hashrate.toFixed(2);
+            });
             clientSocket.emit('stats', {
                 workers: result
             });

@@ -1,0 +1,1 @@
+exports.HASHRATE_REFRESH_RATE = 1000;
