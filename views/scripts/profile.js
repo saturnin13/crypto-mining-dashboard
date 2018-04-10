@@ -23,10 +23,10 @@ window.setTimeout(function() {
 var socket = io();
 
 socket.on('stats', function(data){
-    app.workers = data.workers;
+    workers_table.workers = data.workers;
 });
 
-var app = new Vue({
+var workers_table = new Vue({
     el: "#workers-table",
     data: {
         workers: []
