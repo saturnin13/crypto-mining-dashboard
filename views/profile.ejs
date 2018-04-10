@@ -89,7 +89,7 @@
                                 <input type="hidden" name="activate_mining" value="0" />
                                 <label><input type="checkbox" name="activate_mining" <% if(configs.activate_mining) { %> checked <% } %>> Activate Mining</label>
                             </div>
-                            <button type="submit" name="general_submit" class="btn btn-success">Submit</button>
+                            <button type="submit" name="general_submit" class="btn btn-success">Update general configurations</button>
                         </form>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                     </table>
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="col-sm-2 col-sm-offset-5 text-center">
-                        <button type="submit" name="cryptocurrencies_submit" class="btn btn-success">Submit</button>
+                        <button type="submit" name="cryptocurrencies_submit" class="btn btn-success">Update mined cryptocurencies</button>
                     </div>
                 </form>
             </div>
