@@ -37,7 +37,7 @@ function emitWorkersData(clientSocket) {
         "WHERE user_id=$1", [clientSocket.request.session.passport.user])
         .then((result)=> {
             result.forEach(worker => {
-                worker.hashrate = worker.hashrate.toFixed(2);
+                worker.hashrate = worker.hashrate.toLocaleString(undefined,{ minimumFractionDigits: 2 });
             });
             clientSocket.emit('stats', {
                 workers: result
