@@ -32,7 +32,7 @@ module.exports = function(io, sessionMiddleware) {
 };
 
 function emitWorkersData(clientSocket) {
-    db.many("SELECT * " +
+    db.manyOrNone("SELECT * " +
         "FROM workers " +
         "WHERE user_id=$1", [clientSocket.request.session.passport.user])
         .then((result)=> {
