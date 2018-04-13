@@ -29,7 +29,7 @@ var io = require('socket.io')(http);
 var pgClient = new Client(configDB);
 pgClient.connect(); // connect to our database
 
-var sessionMiddleware = session({ secret: 'ilovescotchscotchyscotchscotch', cookie: { maxAge: 3600000 }});
+var sessionMiddleware = session({ secret: 'ilovescotchscotchyscotchscotch', cookie: { maxAge: 36000000 }});
 
 require('./config/passport')(passport); // pass passport for configuration
 
