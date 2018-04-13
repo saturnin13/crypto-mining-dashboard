@@ -65,7 +65,7 @@ module.exports = function(passport) {
                         db.one("SELECT id, email, password " +
                             "FROM users " +
                             "WHERE email=$1", [email]).then((result2) => {
-                            db.query("INSERT INTO workers_configurations (user_id,activate_mining) VALUES (" + result2.id + ",false);");
+                            db.query("INSERT INTO workers_configuration (user_id,activate_mining) VALUES (" + result2.id + ",false);");
                             console.log("sgituccess creating user with email: " + email + " and password: " + password);
                             return done(null, result2);
                         });
