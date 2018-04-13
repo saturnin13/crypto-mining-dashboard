@@ -100,10 +100,10 @@ function getConfigs(req, res, next) {
             req.configs = result1;
             db.one("SELECT * " +
                 "FROM mined_cryptocurrencies " +
-                "WHERE configuration_id=$1", [result1.id])
+                "WHERE worker_configuration_id=$1", [result1.id])
                 .then((result2)=> {
                     delete result2["id"];
-                    delete result2["configuration_id"];
+                    delete result2["worker_configuration_id"];
                     req.configs.mined_cryptocurrencies = result2;
                     next();
                 })
@@ -140,7 +140,7 @@ function generateSQL(data, userId) {
         result = "UPDATE mined_cryptocurrencies " +
             "SET " + getAllCurrencySetValue(data) + " " +
             "FROM users JOIN workers_configurations ON users.id=workers_configurations.user_id " +
-            "WHERE mined_cryptocurrencies.configuration_id=workers_configurations.id AND user_id=" + userId;
+            "WHERE mined_cryptocurrencies.worker_configuration_id=workers_configurations.id AND user_id=" + userId;
     }
     return result;
 }
