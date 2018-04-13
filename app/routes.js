@@ -94,7 +94,7 @@ function renderProfile(req, res) {
 
 function getConfigs(req, res, next) {
     db.one("SELECT * " +
-        "FROM configurations " +
+        "FROM workers_configurations " +
         "WHERE user_id=$1", [req.user.id])
         .then((result1)=> {
             req.configs = result1;
@@ -133,14 +133,14 @@ function updateConfigs(req, res, next) {
 function generateSQL(data, userId) {
     result = "";
     if(isGeneralConfigurations(data)) {
-        result = "UPDATE configurations " +
+        result = "UPDATE workers_configurations " +
             "SET activate_mining=" + data.activate_mining + " " +
             "WHERE user_id=" + userId;
     } else if (isCryptocurrenciesConfigurations(data)) {
         result = "UPDATE mined_cryptocurrencies " +
             "SET " + getAllCurrencySetValue(data) + " " +
-            "FROM users JOIN configurations ON users.id=configurations.user_id " +
-            "WHERE mined_cryptocurrencies.configuration_id=configurations.id AND user_id=" + userId;
+            "FROM users JOIN workers_configurations ON users.id=workers_configurations.user_id " +
+            "WHERE mined_cryptocurrencies.configuration_id=workers_configurations.id AND user_id=" + userId;
     }
     return result;
 }
