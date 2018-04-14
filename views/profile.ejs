@@ -1,6 +1,6 @@
 <!-- views/profile.ejs -->
 <!doctype html>
-<html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml">
 <head>
     <title>Node Authentication</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -29,99 +29,99 @@
     </div>
 
 
+
+
     <div class="row">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#home">Overview</a></li>
             <li><a data-toggle="tab" href="#general_submit">General Configurations</a></li>
-            <li><a data-toggle="tab" href="#cryptocurrencies_submit">Cryptocurrencies</a></li>
         </ul>
 
+
+
         <div class="tab-content">
-            <div class="row">
-                <div class="col-sm-12">
-                    <% if(errors !== null) { %>
-                    <div class="form-header">
-                        <% if(Object.keys(errors).length !== 0) { %>
-                        <div class="alert alert-danger">
-                            <strong>Error!</strong> The following errors appeared while updating configurations:
-                            <ul class="errors-list">
-                                <% Object.values(errors).forEach(error => { %>
-                                <li><%= error.msg %></li>
-                                <% }) %>
-                            </ul>
+            <div id="home" class="tab-pane fade in active">
+                <div class="panel-group" id="workers-table">
+
+
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <div class="row">
+                                    <div class="col-sm-4 text-center">
+                                        <strong>Machines</strong>
+                                    </div>
+                                    <div class="col-sm-4 text-center">
+                                        <strong>Mined currency</strong>
+                                    </div>
+                                    <div class="col-sm-4 text-center">
+                                        <strong>Hashrate</strong>
+                                    </div>
+                                </div>
+                            </h4>
                         </div>
-                        <% } else { %>
-                        <div class="alert alert-success">
-                            <strong>Success!</strong> Configurations successfully updated.
-                        </div>
-                        <% } %>
+
                     </div>
-                    <% } %>
+
+
+                    <div class="panel panel-default" v-for="worker in workers" @change="updatedWorkerConfigurations">
+
+                        <div class="panel-heading" data-toggle="collapse" data-parent="#workers-table" :href="'#' + worker.worker_name" style="cursor: pointer;">
+                            <h4 class="panel-title">
+                                <div class="row">
+                                    <div class="col-sm-4 text-center">
+                                        {{worker.worker_name}}
+                                    </div>
+                                    <div class="col-sm-4 text-center">
+                                        {{worker.mined_currency}}
+                                    </div>
+                                    <div class="col-sm-4 text-center">
+                                        {{worker.hashrate}} H/s
+                                    </div>
+                                </div>
+                            </h4>
+                        </div>
+
+                        <div :id="worker.worker_name" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <form v-on:change.stop="updatedWorkerConfigurations(worker.worker_name)">
+                                    <div class="checkbox col-sm-2 col-sm-offset-5 text-center">
+                                        <label><input type="checkbox" v-model="worker.activate_mining"> Activate Mining</label>
+                                    </div>
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>Cryptocurrency</th>
+                                            <th>Mining activation</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="(mine_currency, currency) in worker.mined_cryptocurrencies">
+                                            <td>{{currency}}</td>
+                                            <td>
+                                                <input type="checkbox" v-model="worker.mined_cryptocurrencies[currency]">
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+
+
                 </div>
             </div>
 
-            <div id="home" class="tab-pane fade in active">
-                <table class="table table-striped" id="workers-table">
-                    <thead>
-                    <tr>
-                        <th>Machines</th>
-                        <th>Mined currency</th>
-                        <th>Hashrate</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="worker in workers" >
-                        <td > {{worker.worker_name}} </td>
-                        <td> {{worker.mined_currency}} </td>
-                        <td> {{worker.hashrate}} H/s </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+
 
             <div id="general_submit" class="tab-pane fade">
-
-                <div class="row">
-                    <div class="col-sm-2 col-sm-offset-5">
-                        <form method="post" action="/profile#general_submit" novalidate>
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <div class="checkbox">
-                                <input type="hidden" name="activate_mining" value="0" />
-                                <label><input type="checkbox" name="activate_mining" <% if(configs.activate_mining) { %> checked <% } %>> Activate Mining</label>
-                            </div>
-                            <button type="submit" name="general_submit" class="btn btn-success">Update general configurations</button>
-                        </form>
-                    </div>
-                </div>
+                        TODO: add some configuration general for all miners
             </div>
 
-            <div id="cryptocurrencies_submit" class="tab-pane fade">
-                <form method="post" action="/profile#cryptocurrencies_submit" novalidate>
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>Cryptocurrency</th>
-                            <th>Mining activated</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <% for(let currency in configs.mined_cryptocurrencies) { %>
-                        <tr>
-                            <td><%= currency %></td>
-                            <td>
-                                <input type="hidden" name="currencies[<%= currency %>]" value="0" />
-                                <input type="checkbox" name="currencies[<%= currency %>]" <% if(configs.mined_cryptocurrencies[currency]) { %> checked <% } %>>
-                            </td>
-                        </tr>
-                        <% } %>
-                        </tbody>
-                    </table>
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <div class="col-sm-2 col-sm-offset-5 text-center">
-                        <button type="submit" name="cryptocurrencies_submit" class="btn btn-success">Update mined cryptocurencies</button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 </div>

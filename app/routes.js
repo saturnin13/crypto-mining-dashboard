@@ -55,13 +55,13 @@ module.exports = function(app, passport) {
     // =====================================
     // we will want this protected so you have to be logged in to visit
     // we will use route middleware to verify this (the verifyLoggedIn function)
-    app.get('/profile', verifyLoggedIn, getConfigs, renderProfile);
+    app.get('/profile', verifyLoggedIn, renderProfile);
 
-    app.post('/profile', verifyLoggedIn, [formatCheckboxData,
-            oneOf([[check('activate_mining').exists(), check('general_submit').exists()],
-                [check('currencies.*').exists(), check('cryptocurrencies_submit').exists()]])
-            // check('test').isEmail().withMessage('That email doesn‘t look right').trim().normalizeEmail().toBoolean()
-        ], updateConfigs, getConfigs, renderProfile);
+    // app.post('/profile', verifyLoggedIn, [formatCheckboxData,
+    //         oneOf([[check('activate_mining').exists(), check('general_submit').exists()],
+    //             [check('currencies.*').exists(), check('cryptocurrencies_submit').exists()]])
+    //         // check('test').isEmail().withMessage('That email doesn‘t look right').trim().normalizeEmail().toBoolean()
+    //     ], updateConfigs, getConfigs, renderProfile);
 
     // =====================================
     // LOGOUT ==============================
@@ -86,87 +86,6 @@ function verifyLoggedIn(req, res, next) {
 function renderProfile(req, res) {
     res.render('profile.ejs', {
         user : req.user, // get the user out of session and pass to template
-        configs: req.configs,
-        errors: req.errors == null ? null:req.errors,
         csrfToken: req.csrfToken()
     });
-}
-
-function getConfigs(req, res, next) {
-    db.one("SELECT * " +
-        "FROM workers_configuration " +
-        "WHERE user_id=$1", [req.user.id])
-        .then((result1)=> {
-            req.configs = result1;
-            db.one("SELECT * " +
-                "FROM mined_cryptocurrencies " +
-                "WHERE worker_configuration_id=$1", [result1.id])
-                .then((result2)=> {
-                    delete result2["id"];
-                    delete result2["worker_configuration_id"];
-                    req.configs.mined_cryptocurrencies = result2;
-                    next();
-                })
-                .catch((err) => {
-                    console.log("error getting config mined_cryptocurrencies data with " + err);
-                });
-        })
-        .catch((err) => {
-            console.error("error getting config data with " + err);
-        });
-}
-
-function updateConfigs(req, res, next) {
-    const errors = validationResult(req);
-    req.errors = errors.mapped();
-    const sanitizedData = matchedData(req);
-
-    db.query(generateSQL(sanitizedData, req.user.id))
-        .then((result)=> {
-            next();
-        })
-        .catch((err) => {
-            console.log("error updating config data with " + err);
-        });
-}
-
-function generateSQL(data, userId) {
-    result = "";
-    if(isGeneralConfigurations(data)) {
-        result = "UPDATE workers_configuration " +
-            "SET activate_mining=" + data.activate_mining + " " +
-            "WHERE user_id=" + userId;
-    } else if (isCryptocurrenciesConfigurations(data)) {
-        result = "UPDATE mined_cryptocurrencies " +
-            "SET " + getAllCurrencySetValue(data) + " " +
-            "FROM users JOIN workers_configuration ON users.id=workers_configuration.user_id " +
-            "WHERE mined_cryptocurrencies.worker_configuration_id=workers_configuration.id AND user_id=" + userId;
-    }
-    return result;
-}
-
-function getAllCurrencySetValue(data) {
-    for(let currency in data.currencies) {
-        result += "\"" + currency.toUpperCase() + "\"" + "=" + data.currencies[currency] + ", ";
-    }
-    return result.substring(0, result.length - 2)
-}
-
-function formatCheckboxData(req, res, next) {
-    if(isGeneralConfigurations(req.body)) {
-        req.body.activate_mining = req.body.activate_mining[1] === "on";
-    } else if (isCryptocurrenciesConfigurations(req.body)) {
-        for(let currency in req.body.currencies) {
-            req.body.currencies[currency] = req.body.currencies[currency][1] === "on";
-        }
-    }
-    next();
-}
-
-function isGeneralConfigurations(data) {
-    return data.general_submit != null;
-}
-
-function isCryptocurrenciesConfigurations(data) {
-    return data.cryptocurrencies_submit != null;
 }
