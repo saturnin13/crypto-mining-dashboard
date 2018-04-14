@@ -20,6 +20,7 @@ module.exports = function(passport) {
 
     // used to serialize the user for the session
     passport.serializeUser(function(user, done) {
+        console.log(user);
         done(null, user.id);
     });
 
@@ -58,11 +59,14 @@ module.exports = function(passport) {
                 "WHERE email=$1", [email])
                 .then((result)=> {
                     if(result) {
-                        return done(null, false, {message:'User is already registered'});
+                        return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
-                        db.query("INSERT INTO users (Email, Password) " +
-                            "VALUES ('" + email + "','" + password + "');").then((result2) => {
+                        db.one("INSERT INTO users (email, password) " +
+                            "VALUES ('" + email + "','" + password + "') " +
+                            "RETURNING id").then((result2) => {
                             return done(null, result2);
+                        }).catch((err)=>{
+                            console.log("Error inserting user into the database with the following error : " + err);
                         });
                     }
                 })
@@ -134,7 +138,7 @@ module.exports = function(passport) {
                 })
                 .catch((err) => {
                     console.log("error login with " + err);
-                    return done(null, false, {message:'Wrong user name or password'});
+                    return done(null, false, req.flash('loginMessage', 'Wrong user name or password.'));
                 });
 
             // // find a user whose email is the same as the forms email
