@@ -1,3 +1,4 @@
+const globalConstant = require('./variables.js');
 // server.js
 
 // set up ======================================================================
@@ -29,7 +30,7 @@ var io = require('socket.io')(http);
 var pgClient = new Client(configDB);
 pgClient.connect(); // connect to our database
 
-var sessionMiddleware = session({ secret: 'ilovescotchscotchyscotchscotch', cookie: { maxAge: 36000000 }});
+var sessionMiddleware = session({ secret: 'ilovescotchscotchyscotchscotch', cookie: { maxAge: globalConstant.SESSION_EXPIRATION_TIME }});
 
 require('./config/passport')(passport); // pass passport for configuration
 
