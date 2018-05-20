@@ -30,13 +30,16 @@
 
 
 
-
     <div class="row">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#home">Overview</a></li>
             <li><a data-toggle="tab" href="#general_submit">General Configurations</a></li>
         </ul>
 
+
+        <div class="alert alert-danger" role="alert" id="connexion-status-banner" v-if="display_banner">
+            Connexion lost, Session most likely expired, click <a href="/profile">here</a> to reload
+        </div>
 
 
         <div class="tab-content">

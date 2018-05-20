@@ -12,11 +12,11 @@ $('.nav-tabs a').on('shown.bs.tab', function (e) {
 
 // TODO: can be deleted as no alert used yet
 //// Alert timeout
-window.setTimeout(function() {
-    $(".alert").fadeTo(2000, 0.4).slideUp(500, function(){
-        $(this).remove();
-    });
-}, 2000);
+// window.setTimeout(function() {
+//     $(".alert").fadeTo(2000, 0.4).slideUp(500, function(){
+//         $(this).remove();
+//     });
+// }, 2000);
 
 
 //// Set up the websocket for receiving updates from the server
@@ -24,11 +24,32 @@ var socket = io();
 
 // TODO : deal with the fact that when a config is updated it might be reversed for 1 seconds as the incoming data comes before the update reaches the database
 socket.on('workersData', function(data){
+    connexion_status_banner.lastTimeDataReceived = Date.now();
     workers_table.workers = data.workers.sort(function(a, b){
         if(a.worker_name < b.worker_name) return -1;
         if(a.worker_name > b.worker_name) return 1;
         return 0;
     });
+});
+
+var connexion_status_banner = new Vue({
+    el:"#connexion-status-banner",
+    data: {
+        lastTimeDataReceived: 0,
+        display_banner: false,
+        timer: ''
+    },
+    mounted () {
+        this.timer = setInterval(this.updateBanner.bind(this), 1000);
+    },
+    methods: {
+        updateBanner: function () {
+            this.display_banner = Date.now() - this.lastTimeDataReceived > 5000
+        }
+    },
+    beforeDestroy() {
+        clearInterval(this.timer)
+    }
 });
 
 // TODO: use the component for workers and worker
