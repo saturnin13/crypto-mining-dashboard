@@ -24,7 +24,7 @@ module.exports = function(io, sessionMiddleware) {
         console.log("Newly connected client with id " + JSON.stringify(socket.request.session.passport.user));
         connectedClients.add(socket);
         emitWorkersData(socket);
-        socket.on("updatedWorkerConfigurations", updateWorkerConfigurations);
+        socket.on("updatedWorkerConfigurations", updateWorkerGraphicCardConfigurations);
         socket.on("disconnect", () => {
             console.log("Disconnecting for client id  " + socket.request.session.passport.user);
             connectedClients.delete(socket);
@@ -35,25 +35,28 @@ module.exports = function(io, sessionMiddleware) {
 function emitWorkersData(clientSocket) {
     db.manyOrNone("SELECT * " +
         "FROM workers " +
-        "JOIN workers_configuration ON workers.id=workers_configuration.worker_id " +
+        "JOIN graphic_cards ON workers.id=graphic_cards.worker_id " +
+        "JOIN graphic_cards_configuration ON graphic_cards.id=graphic_cards_configuration.graphic_card_id " +
         "WHERE user_id=$1", [clientSocket.request.session.passport.user])
-        .then((result1)=> {
+        .then((workers_graphic_cards) => {
             db.manyOrNone("SELECT mined_cryptocurrencies.* " +
                 "FROM workers " +
-                "JOIN workers_configuration ON workers.id=workers_configuration.worker_id " +
-                "JOIN mined_cryptocurrencies ON workers_configuration.id=mined_cryptocurrencies.worker_configuration_id " +
+                "JOIN graphic_cards ON workers.id=graphic_cards.worker_id " +
+                "JOIN graphic_cards_configuration ON graphic_cards.id=graphic_cards_configuration.graphic_card_id " +
+                "JOIN mined_cryptocurrencies ON graphic_cards_configuration.id=mined_cryptocurrencies.graphic_card_configuration_id " +
                 "WHERE user_id=$1", [clientSocket.request.session.passport.user])
-                .then((result2)=> {
-                    result2.forEach(function(entry) {
-                        delete entry["id"];
-                        delete entry["worker_configuration_id"];
-                    });
-                    result1.forEach((worker, index) => {
-                        worker.hashrate = worker.hashrate.toLocaleString(undefined,{ minimumFractionDigits: 2 });
-                        worker.mined_cryptocurrencies = result2[index];
+                .then((mined_crypto_currencies)=> {
+                    workers_graphic_cards.forEach((worker_graphic_card, index) => {
+                        worker_graphic_card.hashrate = worker_graphic_card.hashrate.toLocaleString(undefined,{ minimumFractionDigits: 2 });
+                        filtered_mined_crypto_currency = mined_crypto_currencies.filter(
+                            (item) => item.graphic_card_configuration_id === worker_graphic_card.id
+                        )[0];
+                        delete filtered_mined_crypto_currency["graphic_card_configuration_id"];
+                        delete filtered_mined_crypto_currency["id"];
+                        worker_graphic_card.mined_cryptocurrencies = mined_crypto_currencies[0];
                     });
                     clientSocket.emit('workersData', {
-                        workers: result1
+                        workers: workers_graphic_cards
                     });
                 })
                 .catch((err) => {
@@ -61,23 +64,23 @@ function emitWorkersData(clientSocket) {
                 });
         })
         .catch((err) => {
-            console.error("error getting config workers data with " + err);
+            console.error("error getting config workers graphic cards data with " + err);
         });
 }
 
-function updateWorkerConfigurations(dataUpdatedWorker) {
-    var updatedWorker = dataUpdatedWorker.worker;
-    db.query("UPDATE workers_configuration " +
-        "SET activate_mining=" + updatedWorker.activate_mining + " " +
-        "WHERE worker_id=" + updatedWorker.worker_id)
+function updateWorkerGraphicCardConfigurations(dataUpdatedWorkerGraphicCard) {
+    var updatedWorkerGraphicCard = dataUpdatedWorkerGraphicCard.worker;
+    db.query("UPDATE graphic_cards_configuration " +
+        "SET activate_mining=" + updatedWorkerGraphicCard.activate_mining + " " +
+        "WHERE graphic_card_id=" + updatedWorkerGraphicCard.graphic_card_id)
         .then()
         .catch((err) => {
-            console.error("error updating workers_configuration data with " + err);
+            console.error("error updating graphic_cards_configuration data with " + err);
         });
     db.query("UPDATE mined_cryptocurrencies " +
-        "SET " + getAllCurrencySetValue(updatedWorker) + " " +
-        "FROM workers_configuration " +
-        "WHERE workers_configuration.id=mined_cryptocurrencies.worker_configuration_id AND worker_id=" + updatedWorker.worker_id)
+        "SET " + getAllCurrencySetValue(updatedWorkerGraphicCard) + " " +
+        "FROM graphic_cards_configuration " +
+        "WHERE graphic_cards_configuration.id=mined_cryptocurrencies.graphic_card_configuration_id AND graphic_card_id=" + updatedWorkerGraphicCard.graphic_card_id)
         .catch((err) => {
             console.error("error updating mined_cryptocurrencies with " + err);
         });

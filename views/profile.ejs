@@ -49,13 +49,16 @@
                         <div class="panel-heading">
                             <h4 class="panel-title">
                                 <div class="row">
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
                                         <strong>Machines</strong>
                                     </div>
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
+                                        <strong>Gpu</strong>
+                                    </div>
+                                    <div class="col-sm-3 text-center">
                                         <strong>Mined currency</strong>
                                     </div>
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
                                         <strong>Hashrate</strong>
                                     </div>
                                 </div>
@@ -70,13 +73,16 @@
                         <div class="panel-heading" data-toggle="collapse" data-parent="#workers-table" :href="'#' + worker.worker_name" style="cursor: pointer;">
                             <h4 class="panel-title">
                                 <div class="row">
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
                                         {{worker.worker_name}}
                                     </div>
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
+                                        {{worker.graphic_card_name}}
+                                    </div>
+                                    <div class="col-sm-3 text-center">
                                         {{worker.mined_currency}}
                                     </div>
-                                    <div class="col-sm-4 text-center">
+                                    <div class="col-sm-3 text-center">
                                         {{worker.hashrate}} H/s
                                     </div>
                                 </div>
