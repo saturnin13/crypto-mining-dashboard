@@ -33,6 +33,7 @@ module.exports = function(io, sessionMiddleware) {
 };
 
 function emitWorkersData(clientSocket) {
+    console.log("Emitting worker data for socket " + clientSocket);
     db.manyOrNone("SELECT * " +
         "FROM workers " +
         "JOIN graphic_cards ON workers.id=graphic_cards.worker_id " +
@@ -69,6 +70,7 @@ function emitWorkersData(clientSocket) {
 }
 
 function updateWorkerGraphicCardConfigurations(dataUpdatedWorkerGraphicCard) {
+    console.log("Updating worker graphic card configuration with " + dataUpdatedWorkerGraphicCard);
     var updatedWorkerGraphicCard = dataUpdatedWorkerGraphicCard.worker;
     db.query("UPDATE graphic_cards_configuration " +
         "SET activate_mining=" + updatedWorkerGraphicCard.activate_mining + " " +
