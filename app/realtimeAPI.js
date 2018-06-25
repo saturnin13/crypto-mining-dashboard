@@ -45,7 +45,8 @@ function emitWorkersData(clientSocket) {
                 "JOIN graphic_cards ON workers.id=graphic_cards.worker_id " +
                 "JOIN graphic_cards_configuration ON graphic_cards.id=graphic_cards_configuration.graphic_card_id " +
                 "JOIN mined_cryptocurrencies ON graphic_cards_configuration.id=mined_cryptocurrencies.graphic_card_configuration_id " +
-                "WHERE user_id=$1", [clientSocket.request.session.passport.user])
+                "WHERE user_id=$1 " +
+                "ORDER BY graphic_cards.graphic_card_name", [clientSocket.request.session.passport.user])
                 .then((mined_crypto_currencies)=> {
                     workers_graphic_cards.forEach((worker_graphic_card, index) => {
                         worker_graphic_card.hashrate = worker_graphic_card.hashrate.toLocaleString(undefined,{ minimumFractionDigits: 2 });
